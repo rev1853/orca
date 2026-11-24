@@ -6,6 +6,7 @@ import { themedStyleSheet } from '../../src/theme/themed-styles'
 import { useMobileColorScheme } from '../../src/theme/use-mobile-color-scheme'
 import { useResponsiveLayout } from '../../src/layout/responsive-layout'
 import { useFoldSplit } from '../../src/layout/use-fold-split'
+import { bindHostSidebarShortcut } from '../../src/layout/bind-host-sidebar-shortcut'
 import {
   HOST_SIDEBAR_DEFAULT_WIDTH,
   HOST_SIDEBAR_MAX_WIDTH,
@@ -88,6 +89,11 @@ export default function HostGroupLayout() {
       : null
   const foldGap = foldSidebarWidth === null || !foldSplit ? 0 : foldSplit.end - foldSplit.start
   const canCollapseSidebar = showSidebar && detailHasContent && foldSidebarWidth === null
+  useEffect(() => {
+    if (Platform.OS === 'web' && pageOwnsHostArea && canCollapseSidebar && !overlayRoute) {
+      return bindHostSidebarShortcut(document, () => setSidebarOpen((open) => !open))
+    }
+  }, [pageOwnsHostArea, canCollapseSidebar, overlayRoute])
 
   // Base host detail is a placeholder; hiding its sidebar would leave nothing useful.
   useEffect(() => {

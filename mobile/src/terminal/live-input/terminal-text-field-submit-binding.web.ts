@@ -1,5 +1,6 @@
 import type { TextInputInstance } from 'react-native'
 import { hostOs } from '../../platform/host-os'
+import { matchesShortcutLetter } from '../../platform/keyboard/matches-shortcut-letter'
 import { createTerminalKeyChordInput } from '../key-input/terminal-key-chord-input'
 import { getTerminalLiveSpecialKeyId } from './terminal-live-input'
 import type { TerminalLiveAccessoryInput } from './terminal-live-accessory-input'
@@ -14,7 +15,8 @@ export function bindTerminalTextFieldSubmit(
   node: TextInputInstance | null,
   onSubmit: () => void,
   onKeyChord?: (input: TerminalLiveAccessoryInput) => boolean,
-  onCompositionEnd?: (text: string) => void
+  onCompositionEnd?: (text: string) => void,
+  onPaste?: () => void
 ): () => void {
   if (!(node instanceof HTMLInputElement) && !(node instanceof HTMLTextAreaElement)) {
     return () => {}
@@ -45,15 +47,30 @@ export function bindTerminalTextFieldSubmit(
       return
     }
     if (
-      !captureHardwareChords ||
-      !onKeyChord ||
       event.defaultPrevented ||
       composing ||
       event.isComposing ||
       event.keyCode === 229 ||
       event.metaKey ||
       event.getModifierState('AltGraph') ||
-      (event.ctrlKey && event.altKey) ||
+      (event.ctrlKey && event.altKey)
+    ) {
+      return
+    }
+    if (onPaste && event.ctrlKey && !event.shiftKey && matchesShortcutLetter(event, 'v')) {
+      if (field.ownerDocument.activeElement !== field || field.disabled || field.readOnly) {
+        return
+      }
+      event.preventDefault()
+      event.stopPropagation()
+      if (!event.repeat) {
+        onPaste()
+      }
+      return
+    }
+    if (
+      !captureHardwareChords ||
+      !onKeyChord ||
       (os === 'ios' && event.altKey && event.key.length === 1) ||
       (event.ctrlKey && event.key === ' ')
     ) {

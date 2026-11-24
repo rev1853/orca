@@ -17,7 +17,6 @@ import {
 } from '../../input-delivery/terminal-send-request'
 import { normalizeTerminalTextInput } from '../../live-input/terminal-text-input-normalization'
 import { encodeTerminalKeyForModes } from '../../key-input/terminal-key-mode-encoding'
-import { useTerminalTextFieldSubmitBinding } from '../../live-input/use-terminal-text-field-submit-binding'
 import type { MobileSessionTab } from '../../../session/tabs/mobile-session-tabs'
 import { useMobileSessionTabActionSheetOpener } from '../../../session/tabs/use-mobile-session-tab-action-targets'
 import type { MobileSessionTerminalWebviewModel } from '../use-mobile-session-terminal-webview'
@@ -48,8 +47,6 @@ export function useMobileSessionTerminalSendActions(scope: MobileSessionTerminal
     activeHandleRef,
     activeSessionTabTypeRef,
     handleLiveInputAccessoryBytes,
-    handleLiveInputCompositionEnd,
-    handleLiveInputSubmit,
     canSend,
     scheduleDelayedAction,
     showToast
@@ -64,18 +61,6 @@ export function useMobileSessionTerminalSendActions(scope: MobileSessionTerminal
       liveInput: liveInputRef.current
     })
   }, [])
-  const bindLiveInputField = useTerminalTextFieldSubmitBinding(
-    liveInputRef,
-    handleLiveInputSubmit,
-    (input) => {
-      if (!client || !activeHandle || !canSend) {
-        return false
-      }
-      void handleAccessoryKey(input)
-      return true
-    },
-    handleLiveInputCompositionEnd
-  )
 
   async function handleAccessoryKey(
     input: ReturnType<typeof createTerminalLiveAccessoryInput>,
@@ -231,8 +216,7 @@ export function useMobileSessionTerminalSendActions(scope: MobileSessionTerminal
     clearSessionTabActionSheetKeyboardListener,
     openSessionTabActionSheet,
     openSessionTabActionSheetAfterKeyboardDismiss,
-    dismissSoftwareKeyboard,
-    bindLiveInputField
+    dismissSoftwareKeyboard
   }
 }
 

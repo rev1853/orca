@@ -6,7 +6,8 @@ export function bindTerminalTextFieldSubmit(
   _node: TextInputInstance | null,
   _onSubmit: () => void,
   _onKeyChord?: (input: TerminalLiveAccessoryInput) => boolean,
-  _onCompositionEnd?: (text: string) => void
+  _onCompositionEnd?: (text: string) => void,
+  _onPaste?: () => void
 ): () => void {
   return () => {}
 }

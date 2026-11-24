@@ -105,6 +105,12 @@ function mountTerminalClipboard(
   return {
     action(name: string, args: Record<string, unknown>) {
       if (name === 'mount') {
+        if (typeof args.bracketedPasteMode === 'boolean') {
+          ptyModesRef.current.set(HANDLE, {
+            ...PTY_MODES,
+            bracketedPasteMode: args.bracketedPasteMode
+          })
+        }
         return screen.mount()
       }
       if (name === 'copy') {

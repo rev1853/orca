@@ -8,16 +8,19 @@ import { bindTerminalTextFieldSubmit } from './terminal-text-field-submit-bindin
 export function useTerminalTextFieldSubmitBinding(
   fieldRef: RefObject<TextInputInstance | null>,
   onSubmit: () => void,
-  onKeyChord?: (input: TerminalLiveAccessoryInput) => boolean,
-  onCompositionEnd?: (text: string) => void
+  onKeyChord: (input: TerminalLiveAccessoryInput) => boolean,
+  onCompositionEnd: (text: string) => void,
+  onPaste: () => void
 ): (node: TextInputInstance | null) => void {
   const onSubmitRef = useRef(onSubmit)
   const onKeyChordRef = useRef(onKeyChord)
   const onCompositionEndRef = useRef(onCompositionEnd)
+  const onPasteRef = useRef(onPaste)
   useEffect(() => {
     onSubmitRef.current = onSubmit
     onKeyChordRef.current = onKeyChord
     onCompositionEndRef.current = onCompositionEnd
+    onPasteRef.current = onPaste
   })
   const unbindRef = useRef<(() => void) | null>(null)
 
@@ -29,8 +32,9 @@ export function useTerminalTextFieldSubmitBinding(
         ? bindTerminalTextFieldSubmit(
             node,
             () => onSubmitRef.current(),
-            (input) => onKeyChordRef.current?.(input) ?? false,
-            (text) => onCompositionEndRef.current?.(text)
+            (input) => onKeyChordRef.current(input),
+            (text) => onCompositionEndRef.current(text),
+            () => onPasteRef.current()
           )
         : null
     },

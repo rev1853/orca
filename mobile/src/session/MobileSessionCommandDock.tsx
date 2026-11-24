@@ -16,6 +16,7 @@ import { useMobileTranslation } from '../i18n/use-mobile-translation'
 import type { MobileSessionController } from './use-mobile-session-controller'
 import { useMobileSessionKeyboardLift } from '../terminal/session/input-controls/use-mobile-session-keyboard-lift'
 import { useLiveInputCaptureText } from '../terminal/session/input-controls/live-input-capture'
+import { useTerminalTextFieldSubmitBinding } from '../terminal/live-input/use-terminal-text-field-submit-binding'
 import { useKeyboardPersistingTaps } from '../platform/keyboard/keyboard-persisting-taps'
 
 // The key row above one live field: every letter typed goes straight to the terminal, shell or agent.
@@ -107,12 +108,24 @@ function LiveInputField({
     liveInputCapture,
     handleLiveInputChange,
     handleLiveInputKeyPress,
-    bindLiveInputField,
     liveInputRef,
     handleLiveInputSubmit,
     canSend,
     dockKeys
   } = controller
+  const bindLiveInputField = useTerminalTextFieldSubmitBinding(
+    liveInputRef,
+    handleLiveInputSubmit,
+    (input) => {
+      if (!controller.client || !controller.activeHandle || !canSend) {
+        return false
+      }
+      void controller.handleAccessoryKey(input)
+      return true
+    },
+    controller.handleLiveInputCompositionEnd,
+    controller.handlePaste
+  )
   const text = useLiveInputCaptureText(liveInputCapture)
   return (
     <TextField

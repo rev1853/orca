@@ -80,6 +80,14 @@ For the Android emulator, use `ws://10.0.2.2:6768`. For a physical phone, use th
 
 If the phone has a stale host entry, remove it from the app and pair again.
 
+## Physical keyboard in the paired workspace
+
+- **Ctrl+V** in the terminal’s focused **Live input** uses the same clipboard action as **Paste** in **More Keys**. It doesn’t append Enter. Use a bracketed-paste-aware shell for multiline commands: without bracketed paste, a newline in the clipboard can execute a command.
+- **Ctrl+Shift+L** hides or shows the sidebar in a wide workspace where the page owns both panes. It keeps the detail pane and sidebar width. In a narrow window, across a hinge, or beside a native-owned sidebar, the shortcut is inactive.
+- Use the **Ctrl+R** terminal accessory for reverse history search in shells that support it. It searches shell history, not all Orca sessions.
+
+For changes to the paired workspace, run `pnpm run build:mobile-web` at the repository root and reopen the workspace against the desktop serving that `out/mobile-web` bundle. Reloading Metro does not update the desktop’s bundle.
+
 ## Development Paths
 
 ### Android Phone
