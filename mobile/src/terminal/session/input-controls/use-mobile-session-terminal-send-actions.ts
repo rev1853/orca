@@ -18,7 +18,6 @@ import {
 import { normalizeTerminalTextInput } from '../../live-input/terminal-text-input-normalization'
 import { encodeTerminalKeyForModes } from '../../key-input/terminal-key-mode-encoding'
 import { useTerminalTextFieldSubmitBinding } from '../../live-input/use-terminal-text-field-submit-binding'
-import { useAgentSendKeyboardDismissal } from './use-agent-send-keyboard-dismissal'
 import type { MobileSessionTab } from '../../../session/tabs/mobile-session-tabs'
 import { useMobileSessionTabActionSheetOpener } from '../../../session/tabs/use-mobile-session-tab-action-targets'
 import type { MobileSessionTerminalWebviewModel } from '../use-mobile-session-terminal-webview'
@@ -32,7 +31,6 @@ export function useMobileSessionTerminalSendActions(scope: MobileSessionTerminal
     sendTerminalOrderedInput,
     terminalRefs,
     activeHandle,
-    activeSessionTab,
     setActionTarget,
     setMarkdownActionTarget,
     setFileActionTarget,
@@ -49,8 +47,6 @@ export function useMobileSessionTerminalSendActions(scope: MobileSessionTerminal
     sessionTabActionSheetRequestSeqRef,
     activeHandleRef,
     activeSessionTabTypeRef,
-    getSendCompletionGeneration,
-    getLiveInteractionGeneration,
     handleLiveInputAccessoryBytes,
     handleLiveInputCompositionEnd,
     handleLiveInputSubmit,
@@ -68,28 +64,9 @@ export function useMobileSessionTerminalSendActions(scope: MobileSessionTerminal
       liveInput: liveInputRef.current
     })
   }, [])
-  const dismissKeyboardAfterAgentSend = useAgentSendKeyboardDismissal(
-    dismissSoftwareKeyboard,
-    getSendCompletionGeneration
-  )
-
-  const submitLiveInput = useCallback(() => {
-    const submit = handleLiveInputSubmit()
-    const sendOrigin = {
-      tab: activeSessionTab,
-      generation: getSendCompletionGeneration(),
-      interaction: getLiveInteractionGeneration()
-    }
-    void submit.then((accepted) =>
-      dismissKeyboardAfterAgentSend(
-        sendOrigin,
-        accepted && sendOrigin.interaction === getLiveInteractionGeneration()
-      )
-    )
-  }, [activeSessionTab, dismissKeyboardAfterAgentSend, handleLiveInputSubmit])
   const bindLiveInputField = useTerminalTextFieldSubmitBinding(
     liveInputRef,
-    submitLiveInput,
+    handleLiveInputSubmit,
     (input) => {
       if (!client || !activeHandle || !canSend) {
         return false
@@ -255,9 +232,7 @@ export function useMobileSessionTerminalSendActions(scope: MobileSessionTerminal
     openSessionTabActionSheet,
     openSessionTabActionSheetAfterKeyboardDismiss,
     dismissSoftwareKeyboard,
-    dismissKeyboardAfterAgentSend,
-    bindLiveInputField,
-    submitLiveInput
+    bindLiveInputField
   }
 }
 

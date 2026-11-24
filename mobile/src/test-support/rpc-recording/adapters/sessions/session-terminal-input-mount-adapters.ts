@@ -144,14 +144,6 @@ function mountTerminalInputSend(
   )
 
   const activeHandleRef = { current: HANDLE }
-  const activeSessionTab = {
-    type: 'terminal' as const,
-    id: 'tab-1',
-    title: 'claude',
-    terminal: HANDLE,
-    launchAgent: 'claude' as const,
-    isActive: true
-  }
   let actions: ReturnType<typeof useSendActions> | undefined
   let liveAccepted: unknown = 'unsent'
 
@@ -163,7 +155,6 @@ function mountTerminalInputSend(
         terminalRefs: { current: new Map() },
         client,
         activeHandle: HANDLE,
-        activeSessionTab,
         canSend: true,
         deviceTokenRef: { current: DEVICE_TOKEN },
         clientRef: { current: client },
@@ -176,7 +167,6 @@ function mountTerminalInputSend(
         sessionTabActionSheetRequestSeqRef: { current: 0 },
         activeHandleRef,
         activeSessionTabTypeRef: { current: 'terminal' },
-        getSendCompletionGeneration: () => 0,
         showToast: (message: string, durationMs?: number) =>
           effect('toast', { message, durationMs: durationMs ?? null })
       })

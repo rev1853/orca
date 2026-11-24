@@ -109,7 +109,7 @@ function LiveInputField({
     handleLiveInputKeyPress,
     bindLiveInputField,
     liveInputRef,
-    submitLiveInput,
+    handleLiveInputSubmit,
     canSend,
     dockKeys
   } = controller
@@ -130,7 +130,7 @@ function LiveInputField({
         }
       }}
       onKeyPress={handleLiveInputKeyPress}
-      onSubmitEditing={submitLiveInput}
+      onSubmitEditing={handleLiveInputSubmit}
       placeholder={t('session.commandDock.tapToShowKeyboard', 'Tap to show keyboard')}
       accessibilityLabel={t('session.commandDock.liveInputLabel', 'Live terminal input')}
       accessibilityHint={t(

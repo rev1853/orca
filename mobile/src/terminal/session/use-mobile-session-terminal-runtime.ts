@@ -119,7 +119,6 @@ export function useMobileSessionTerminalRuntime(scope: MobileSessionScreenStateM
   const {
     clearPendingLiveInputCommit,
     flushPendingLiveInputBeforeExternalSend,
-    getLiveInputInteractionGeneration,
     handleLiveInputAccessoryBytes,
     handleLiveInputChange,
     handleLiveInputCompositionEnd,
@@ -226,8 +225,7 @@ export function useMobileSessionTerminalRuntime(scope: MobileSessionScreenStateM
     resetLiveInputFocus,
     terminalInventoryRecoveryScope,
     registerTerminalInventoryRecoveryAction,
-    signalTerminalInventoryRecovery,
-    getLiveInteractionGeneration: getLiveInputInteractionGeneration
+    signalTerminalInventoryRecovery
   }
 }
 

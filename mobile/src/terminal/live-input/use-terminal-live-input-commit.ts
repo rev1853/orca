@@ -20,6 +20,15 @@ const ENDED_SESSION_ECHO_MS = 500
 type TerminalLiveInputKeyPressEvent = {
   readonly nativeEvent: {
     readonly key: string
+    readonly defaultPrevented?: boolean
+    readonly isComposing?: boolean
+    readonly keyCode?: number
+    readonly metaKey?: boolean
+    readonly ctrlKey?: boolean
+    readonly altKey?: boolean
+    readonly shiftKey?: boolean
+    readonly getModifierState?: (key: string) => boolean
+    readonly preventDefault?: () => void
   }
 }
 
@@ -48,7 +57,6 @@ type TerminalLiveInputCommitOptions<TTabType extends string> = {
 type TerminalLiveInputCommitHandlers = {
   readonly clearPendingLiveInputCommit: () => void
   readonly flushPendingLiveInputBeforeExternalSend: (handle: string) => Promise<boolean>
-  readonly getLiveInputInteractionGeneration: () => number
   readonly handleLiveInputAccessoryBytes: (
     input: TerminalLiveAccessoryInput
   ) => Promise<TerminalLiveAccessoryInputCommitResult>
@@ -71,7 +79,6 @@ export function useTerminalLiveInputCommit<TTabType extends string>({
   sendLiveTerminalInputRef,
   setLiveInputCapture
 }: TerminalLiveInputCommitOptions<TTabType>): TerminalLiveInputCommitHandlers {
-  const liveInputInteractionGenerationRef = useRef(0)
   // Click guards compare against the field text cleared before the cursor moved.
   const liveInputTextRef = useRef('')
   const endedSessionTextRef = useRef<{
@@ -86,9 +93,6 @@ export function useTerminalLiveInputCommit<TTabType extends string>({
     },
     [setLiveInputCapture]
   )
-  const advanceLiveInputInteractionGeneration = useCallback(() => {
-    liveInputInteractionGenerationRef.current += 1
-  }, [])
   // Drop the cleared field's late native echo of whatever session just ended.
   const recordEndedSession = useCallback((handle: string) => {
     const fieldText = liveInputTextRef.current
@@ -142,7 +146,6 @@ export function useTerminalLiveInputCommit<TTabType extends string>({
 
   const flushPendingLiveInputBeforeExternalSend = useCallback(
     async (handle: string): Promise<boolean> => {
-      advanceLiveInputInteractionGeneration()
       const pendingHandle = pendingLiveInputHandleRef.current
       if (pendingHandle && pendingHandle !== handle) {
         clearPendingLiveInputCommit()
@@ -154,22 +157,16 @@ export function useTerminalLiveInputCommit<TTabType extends string>({
       }
       return waitForPendingLiveInputFlush()
     },
-    [
-      advanceLiveInputInteractionGeneration,
-      clearPendingLiveInputCommit,
-      flushPendingLiveInputText,
-      waitForPendingLiveInputFlush
-    ]
+    [clearPendingLiveInputCommit, flushPendingLiveInputText, waitForPendingLiveInputFlush]
   )
 
   // Clicks, Return and held-text controls leave the mirror’s assumed field; start a new editing session.
   const endFieldSessionThenSend = useCallback<TerminalLiveInputSender>(
     (handle, bytes, origin) => {
-      advanceLiveInputInteractionGeneration()
       recordEndedSession(handle)
       return endLiveInputSessionThenSend(handle, bytes, origin)
     },
-    [advanceLiveInputInteractionGeneration, endLiveInputSessionThenSend, recordEndedSession]
+    [endLiveInputSessionThenSend, recordEndedSession]
   )
 
   const sendLiveInputClick = useCallback(
@@ -208,14 +205,13 @@ export function useTerminalLiveInputCommit<TTabType extends string>({
         clearPendingLiveInputCommit()
         return
       }
-      // Echo native field text verbatim so iOS keeps dictation/IME alive; normalize only the PTY mirror.
-      advanceLiveInputInteractionGeneration()
       // DOM input signals fresh edits even when mobile keyboards omit key events.
       if (nativeEvent.inputType) {
         endedSessionTextRef.current = null
       } else if (dropEndedSessionEcho(nativeEvent.text)) {
         return
       }
+      // Echo native field text verbatim so iOS keeps dictation/IME alive; normalize only the PTY mirror.
       updateLiveInputCapture(nativeEvent.text)
       void applyLiveInputMirror(
         activeHandle,
@@ -225,7 +221,6 @@ export function useTerminalLiveInputCommit<TTabType extends string>({
     },
     [
       activeHandle,
-      advanceLiveInputInteractionGeneration,
       applyLiveInputMirror,
       clearPendingLiveInputCommit,
       dropEndedSessionEcho,
@@ -239,17 +234,25 @@ export function useTerminalLiveInputCommit<TTabType extends string>({
     [handleLiveInputChange]
   )
 
-  const getLiveInputInteractionGeneration = useCallback(
-    () => liveInputInteractionGenerationRef.current,
-    []
-  )
-
   const handleLiveInputKeyPress = useCallback(
-    (event: TerminalLiveInputKeyPressEvent) => {
+    ({ nativeEvent }: TerminalLiveInputKeyPressEvent) => {
       if (!activeHandle) {
         return
       }
-      advanceLiveInputInteractionGeneration()
+      // The web capture listener handles terminal chords; leave the rest to the browser or IME.
+      if (
+        nativeEvent.preventDefault &&
+        (nativeEvent.defaultPrevented ||
+          nativeEvent.isComposing ||
+          nativeEvent.keyCode === 229 ||
+          nativeEvent.metaKey ||
+          nativeEvent.ctrlKey ||
+          nativeEvent.altKey ||
+          nativeEvent.shiftKey ||
+          nativeEvent.getModifierState?.('AltGraph'))
+      ) {
+        return
+      }
       endedSessionTextRef.current = null
       const ownsPendingState = pendingLiveInputHandleRef.current === activeHandle
       if (pendingLiveInputHandleRef.current && !ownsPendingState) {
@@ -259,7 +262,7 @@ export function useTerminalLiveInputCommit<TTabType extends string>({
       // Key events precede the caret move, so this is where the key starts from.
       const selection = readLiveInputSelection(liveInputRef.current, fieldText)
       const decision = getTerminalLiveSpecialKeyDecision({
-        key: event.nativeEvent.key,
+        key: nativeEvent.key,
         heldText: ownsPendingState ? heldLiveInputTextRef.current : '',
         sentText: ownsPendingState ? sentLiveInputTextRef.current : '',
         caretAtFieldEnd:
@@ -270,9 +273,11 @@ export function useTerminalLiveInputCommit<TTabType extends string>({
         case 'local-edit':
           return
         case 'send-now':
+          nativeEvent.preventDefault?.()
           void queueLiveInputControl(activeHandle, decision.bytes)
           return
         case 'commit-held-then-send':
+          nativeEvent.preventDefault?.()
           void endFieldSessionThenSend(activeHandle, decision.bytes)
           return
         default:
@@ -281,7 +286,6 @@ export function useTerminalLiveInputCommit<TTabType extends string>({
     },
     [
       activeHandle,
-      advanceLiveInputInteractionGeneration,
       clearPendingLiveInputCommit,
       endFieldSessionThenSend,
       liveInputRef,
@@ -298,7 +302,6 @@ export function useTerminalLiveInputCommit<TTabType extends string>({
     liveInputComposingRef,
     liveInputRef,
     liveInputTextRef,
-    onInteraction: advanceLiveInputInteractionGeneration,
     pendingLiveInputHandleRef,
     queueLiveInputControl,
     sentLiveInputTextRef,
@@ -315,7 +318,6 @@ export function useTerminalLiveInputCommit<TTabType extends string>({
   return {
     clearPendingLiveInputCommit,
     flushPendingLiveInputBeforeExternalSend,
-    getLiveInputInteractionGeneration,
     handleLiveInputAccessoryBytes,
     handleLiveInputChange,
     handleLiveInputCompositionEnd,
