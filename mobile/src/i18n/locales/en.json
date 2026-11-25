@@ -2342,6 +2342,14 @@
     }
   },
   "session": {
+    "agentUsage": {
+      "title": "Agent usage",
+      "scope": "Active accounts on the paired computer",
+      "disconnected": "Connect to the computer to see usage.",
+      "loadFailed": "Couldn’t load usage from the paired computer.",
+      "loading": "Loading usage",
+      "unavailable": "No quota reported"
+    },
     "browserTabActionSheet": {
       "title": "Browser",
       "forward": "Forward",

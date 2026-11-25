@@ -16,7 +16,6 @@ import type { SectionRepo } from '../workspace-list/workspace-list-types'
 
 // Use served all-host project grouping; older desktops fall back to repo grouping.
 // Only visible hosts’ repos open empty sections, and only their project groups list.
-// Groups nest only a served catalog's repos, the only ones that name their group.
 export function buildProjectSectionCatalog(
   served: ServedProjectSections | null,
   desktopRepos: readonly SectionRepo[],
@@ -33,6 +32,11 @@ export function buildProjectSectionCatalog(
     return {
       ...NO_PROJECT_SECTION_CATALOG,
       repos: shown(desktopRepos),
+      projectGroups: filterProjectGroupsForVisibleHosts(
+        hostProjectGroups,
+        visibleHostIds ? new Set(visibleHostIds) : null,
+        LOCAL_EXECUTION_HOST_ID
+      ),
       projectOrderBy: projectOrderBy ?? NO_PROJECT_SECTION_CATALOG.projectOrderBy
     }
   }

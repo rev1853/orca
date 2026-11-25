@@ -33,6 +33,10 @@ function desktopSectionRepo(
     displayName: repo.displayName,
     path: repo.path ?? repo.id,
     executionHostId: getRepoExecutionHostId(repo),
+    ...(typeof repo.projectGroupId === 'string' ? { projectGroupId: repo.projectGroupId } : {}),
+    ...(typeof repo.projectGroupOrder === 'number'
+      ? { projectGroupOrder: repo.projectGroupOrder }
+      : {}),
     ...(repo.badgeColor ? { badgeColor: repo.badgeColor } : {}),
     ...(repoIcon ? { repoIcon } : {})
   }

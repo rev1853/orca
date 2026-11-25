@@ -8,6 +8,7 @@ import { useRefreshHint } from '../query/refresh-hint'
 import { NavBarButton } from '../components/nav-bar/NavBarButton'
 import { MobileSessionHeaderMoreMenu } from './MobileSessionHeaderMoreMenu'
 import { MobileSourceControlButton } from './MobileSourceControlButton'
+import { WorkspaceAgentUsageButton } from './WorkspaceAgentUsageButton'
 import { MobileSessionTabBar } from './tabs/MobileSessionTabBar'
 import { MobileSessionTitleBlock } from './MobileSessionTitleBlock'
 import type { SessionTitleCard } from './tabs/use-session-title-card'
@@ -147,6 +148,13 @@ export function MobileSessionHeader({
           onPress={() => handlePanelTap('sourceControl')}
         />
       ) : null}
+      <WorkspaceAgentUsageButton
+        key={hostId}
+        hostId={hostId}
+        client={controller.client}
+        connState={connState}
+        lastConnectedAt={controller.lastConnectedAt}
+      />
       <NavBarButton
         ref={moreRef}
         active={activePanel !== null && !(sourceControlInBar && activePanel === 'sourceControl')}

@@ -15,6 +15,7 @@ import {
   NO_HOST_LIST_INPUT
 } from '../catalog/host-list-queries'
 import { hostRepoCatalogSnapshotRead } from '../host-screen-operations'
+import { hostProjectSectionsQuery } from '../catalog/use-host-project-sections'
 import {
   manageableGroups,
   manageableProjects,
@@ -44,6 +45,7 @@ export const hostProjectGroupsQuery = defineHostQuery<typeof NO_HOST_LIST_INPUT,
 
 const catalogKeys = (hostId: string) => [
   hostQueryKey(hostId, hostRepoCatalogQuery.family, HOST_LIST_TARGET, NO_HOST_LIST_INPUT),
+  hostQueryKey(hostId, hostProjectSectionsQuery.family, HOST_LIST_TARGET, NO_HOST_LIST_INPUT),
   hostQueryKey(hostId, hostProjectGroupsQuery.family, HOST_LIST_TARGET, NO_HOST_LIST_INPUT)
 ]
 export { catalogKeys as projectCatalogQueryKeys }

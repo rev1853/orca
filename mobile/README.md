@@ -80,6 +80,11 @@ For the Android emulator, use `ws://10.0.2.2:6768`. For a physical phone, use th
 
 If the phone has a stale host entry, remove it from the app and pair again.
 
+## Paired workspace projects and usage
+
+- In **Workspace options**, set **Group by → Project** to see projects under their groups. Other grouping modes still sort workspaces by their selected category.
+- Open a workspace and tap the gauge in the toolbar to see quota and reset windows for Codex, Claude Code, and Antigravity. These are the paired computer’s active accounts, not usage totals for the current workspace. If the computer has no quota reading for an agent, the drawer says so.
+
 ## Physical keyboard in the paired workspace
 
 - **Ctrl+V** in the terminal’s focused **Live input** uses the same clipboard action as **Paste** in **More Keys**. It doesn’t append Enter. Use a bracketed-paste-aware shell for multiline commands: without bracketed paste, a newline in the clipboard can execute a command.
