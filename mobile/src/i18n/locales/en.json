@@ -8523,5 +8523,130 @@
       "home": "A managed agent's Home Chat can't be deleted",
       "workerOwed": "An orchestration still waits on this chat"
     }
+  },
+  "projectManager": {
+    "browse": {
+      "title": "Choose a folder",
+      "onComputer": "On {{computer}}",
+      "loading": "Loading folders…",
+      "drives": "Drives",
+      "parent": "Parent folder",
+      "noFolders": "No folders here",
+      "useFolder": "Use this folder"
+    },
+    "checking": "Checking {{computer}}…",
+    "errors": {
+      "updateComputer": "Update Orca on this computer to manage projects",
+      "unconfirmed": "Check the project list before trying again",
+      "gone": "That project or group is no longer on this computer. The list has been refreshed.",
+      "notGit": "This folder is not a Git repository. Choose Plain folder to open it as it is.",
+      "generic": "Something went wrong. Try again."
+    },
+    "offline": "Reconnect to {{computer}} to manage projects.",
+    "notice": {
+      "removed": "Removed {{name}} from Orca. Its files were not touched.",
+      "group": "Created group {{name}}",
+      "added": "{{name}} is in your projects",
+      "moved": "Moved {{name}}",
+      "saved": "Saved {{name}}"
+    },
+    "title": "Manage projects",
+    "edit": {
+      "colors": {
+        "neutral": "Gray",
+        "red": "Red",
+        "orange": "Orange",
+        "yellow": "Yellow",
+        "green": "Green",
+        "teal": "Teal",
+        "purple": "Purple",
+        "pink": "Pink",
+        "custom": "Custom color"
+      },
+      "title": "Edit project",
+      "name": "Name",
+      "color": "Color",
+      "icon": "Icon",
+      "iconKeep": "Keep",
+      "iconEmoji": "Emoji",
+      "iconLetters": "Initials",
+      "iconDefault": "Default",
+      "initialsField": "Initials, one or two characters",
+      "imageKept": "This project uses an image icon. It stays unless you pick another icon.",
+      "emojiIconField": "Emoji icon"
+    },
+    "new": {
+      "title": "New project",
+      "name": "Name",
+      "namePlaceholder": "my-project",
+      "location": "Create in",
+      "explain": "Creates the folder on {{computer}}, starts a Git repository there and makes the first commit.",
+      "noGit": "Git is not installed on {{computer}}, so a new project cannot be started there.",
+      "openInstead": "Open an existing folder instead",
+      "submit": "Create project"
+    },
+    "open": {
+      "title": "Open existing folder",
+      "path": "Folder on {{computer}}",
+      "pathPlaceholder": "Absolute path",
+      "kind": "Open it as",
+      "git": "Git repository",
+      "plain": "Plain folder",
+      "gitExplain": "The folder must already be a Git repository. Nothing is created or changed in it.",
+      "plainExplain": "Orca opens the folder as it is, without adding Git. Its files stay where they are.",
+      "submit": "Open folder"
+    },
+    "group": {
+      "title": "New group",
+      "name": "Group name",
+      "submit": "Create group"
+    },
+    "loading": "Loading projects…",
+    "list": {
+      "noGroup": "No group",
+      "groupUnavailable": "Group unavailable",
+      "groupUnknown": "Group unknown",
+      "projects": "Projects",
+      "empty": "No projects yet",
+      "emptyHint": "Create a project or open a folder on {{computer}}.",
+      "emptyGroups": "Empty groups",
+      "edit": "Edit",
+      "editSpoken": "Edit {{name}}",
+      "moveSpoken": "Move {{name}} to a group",
+      "removeSpoken": "Remove {{name}} from Orca"
+    },
+    "move": {
+      "title": "Move to group",
+      "none": "No group",
+      "noGroups": "{{computer}} has no groups yet. Create one from the project list."
+    },
+    "remove": {
+      "title": "Remove from Orca",
+      "counting": "Checking what is open…",
+      "question": "Remove {{name}} from Orca on {{computer}}?",
+      "changed": "More was open on {{computer}} since you looked. Review this and confirm again.",
+      "terminals": "{{n}} open terminals in this project will stop.",
+      "workspaces": "Orca will forget the details of {{n}} workspaces in it.",
+      "keeps": "The files in this folder stay on {{computer}}. Copies of this project on other computers stay registered.",
+      "confirm": "Remove from Orca"
+    },
+    "form": {
+      "browse": "Browse on {{computer}}"
+    },
+    "createErrors": {
+      "nameEmpty": "Name cannot be empty",
+      "nameInvalid": "Name cannot contain slashes or be \".\" / \"..\"",
+      "parentRequired": "Parent directory is required",
+      "parentNotAbsolute": "Parent directory must be an absolute path",
+      "targetInaccessible": "Cannot access target path: {{detail}}",
+      "targetNotEmpty": "\"{{name}}\" already exists at this location and is not empty.",
+      "targetNotFolder": "\"{{name}}\" already exists at this location and is not a folder.",
+      "readDirectoryFailed": "Failed to read directory: {{detail}}",
+      "createDirectoryFailed": "Failed to create directory: {{detail}}",
+      "prepareDirectoryFailed": "Failed to prepare directory: {{detail}}",
+      "gitIdentityMissing": "Git author identity is not configured. Run `git config --global user.name \"Your Name\"` and `git config --global user.email \"you@example.com\"`, then try again.",
+      "gitInitFailed": "Failed to initialize git repository: {{detail}}",
+      "initialCommitFailed": "Failed to create initial commit: {{detail}}"
+    }
   }
 }

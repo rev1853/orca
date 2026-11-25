@@ -3,6 +3,7 @@ import { Pressable, Text, type HostInstance } from 'react-native'
 import {
   CalendarClock,
   ChevronLeft,
+  FolderCog,
   Link,
   List,
   MoreHorizontal,
@@ -30,6 +31,7 @@ import {
 } from '../transport/connection/connection-health'
 import type { HostScreenController } from './use-host-screen-controller'
 import { HostSharedLinksSheet } from './host-shared-links-sheet'
+import { HostProjectManagementSheet } from './host-project-management-sheet'
 import { LOCAL_EXECUTION_HOST_ID } from '../../../src/shared/execution-host/execution-host'
 
 function isErrorVerdict(v: ConnectionVerdict): boolean {
@@ -101,6 +103,7 @@ export function HostScreenHeader({
   const moreRef = useRef<HostInstance>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [sharedLinksOpen, setSharedLinksOpen] = useState(false)
+  const [projectsOpen, setProjectsOpen] = useState(false)
   // The computer's own bot links, once it lists bots; a server's live under that server's account.
   const listsBots = controller.bots.some(
     (entry) => entry.kind === 'listed' && entry.hostId === LOCAL_EXECUTION_HOST_ID
@@ -133,6 +136,14 @@ export function HostScreenHeader({
       disabled: disconnected,
       closeBeforePress: true,
       onPress: () => actions.navigateFromHostList(`${hostPath}/accounts`)
+    },
+    {
+      id: 'manage-projects',
+      label: t('projectManager.title', 'Manage projects'),
+      icon: FolderCog,
+      disabled: disconnected,
+      closeBeforePress: true,
+      onPress: () => setProjectsOpen(true)
     },
     ...(listsBots
       ? [
@@ -211,6 +222,11 @@ export function HostScreenHeader({
           onClose={() => setSharedLinksOpen(false)}
         />
       ) : null}
+      <HostProjectManagementSheet
+        controller={controller}
+        visible={projectsOpen}
+        onClose={() => setProjectsOpen(false)}
+      />
     </>
   )
 }

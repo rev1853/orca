@@ -45,8 +45,9 @@ export const MOBILE_WEB_APP_HOST_CATALOG_MAX_BYTES = 384 * 1024
 // names count as eager. The phone shell still downloads each on-demand file to disk once per bundle
 // update (shellDownloadedAssets), so this budget also bounds that download.
 // Eager: main's own fence. 10.9375 MiB since main reached 11,435,308 bytes with the phone's connector
-// account actions still to land (2026-11-23).
-export const MOBILE_WEB_APP_BUNDLE_MAX_EAGER_BYTES = 10.9375 * 1024 * 1024
+// account actions still to land (2026-11-23). 11 MiB for the phone's project manager sheet and
+// folder browser (2026-11-25): 11,492,306 bytes with them.
+export const MOBILE_WEB_APP_BUNDLE_MAX_EAGER_BYTES = 11 * 1024 * 1024
 export const MOBILE_WEB_APP_BUNDLE_MAX_ON_DEMAND_BYTES = 1024 * 1024
 export const MOBILE_WEB_APP_BUNDLE_MAX_ON_DEMAND_FILE_BYTES = 128 * 1024
 

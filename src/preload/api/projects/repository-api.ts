@@ -30,6 +30,7 @@ import type {
 import type {
   BaseRefDefaultResult,
   BaseRefSearchResult,
+  RemovedLocalRepo,
   Repo
 } from '../../../shared/repository/repo-types'
 import type { WslMovedProject } from '../../../shared/wsl-move/wsl-moved-project'
@@ -120,7 +121,7 @@ export type RepositoryApi = {
     limit?: number
     hostId?: ExecutionHostId
   }) => Promise<BaseRefSearchResult[]>
-  onChanged: (callback: () => void) => () => void
+  onChanged: (callback: (removed?: RemovedLocalRepo) => void) => () => void
 }
 
 export type ProjectsApi = {

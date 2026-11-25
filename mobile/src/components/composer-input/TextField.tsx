@@ -62,6 +62,7 @@ export function TextField({
       editable={editable}
       placeholderTextColor={colors.textMuted}
       selectionColor={colors.accentBlue}
+      accessibilityLabel={label}
       style={[styles.fieldText, monospace && styles.mono]}
       {...inputProps}
       onFocus={focus.onFocus}

@@ -33,7 +33,7 @@ import type {
 import type { RuntimeSyncedLeaf } from '../../../shared/remote-runtime/session-graph/runtime-session-contracts'
 import type { readOrchestrationFleetAgentStatusSnapshot } from '../orchestration/addressing/orchestration-fleet-agent-status-snapshot'
 import type { ExecutionHostId } from '../../../shared/execution-host/execution-host'
-import type { Repo } from '../../../shared/repository/repo-types'
+import type { RemovedLocalRepo, Repo } from '../../../shared/repository/repo-types'
 import type { ProjectExecutionRuntimeResolution } from '../../../shared/execution-host/project-execution-runtime'
 import type { RuntimeWorktreeScanResult } from '../workspaces/catalog/repo-worktree-resolution-scan'
 import type { ProcessedAgentStatusChunk } from '../../../shared/agent-status/transport/agent-status-osc'
@@ -57,7 +57,7 @@ export abstract class RuntimeConstructionServices extends RuntimeAgentStatusRead
   abstract invalidateResolvedWorktreeCache(): void
   abstract invalidateWorktreeScanCacheForRepo(repoId: string): void
   abstract notifyWorktreesChanged(repoId: string, options?: { invalidateGitScans?: boolean }): void
-  protected abstract notifyReposChanged(): void
+  protected abstract notifyReposChanged(removed?: RemovedLocalRepo): void
   protected abstract isPtyKnownExited(ptyId: string): boolean
   protected abstract onPtyStopSettled(ptyId: string, stopped: boolean): void
 

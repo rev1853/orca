@@ -3,6 +3,7 @@ import { getRepoExecutionHostId } from '../../../../../shared/execution-host/exe
 import { isRepoHidden } from '../../../../../shared/project/catalog/hidden-projects'
 import { resolveReplySnapshot } from '../../workspace-client-views/content-snapshot-id'
 import { PROJECT_GROUP_METHODS } from './project-group-rpc-methods'
+import { MOBILE_PROJECT_METHODS } from './mobile-project-management'
 import { PROJECT_RUNTIME_METHODS } from './project-runtime-rpc-methods'
 import { FOLDER_WORKSPACE_METHODS } from '../workspaces/folder-workspace'
 import {
@@ -57,6 +58,7 @@ export const REPO_METHODS = [
   }),
   ...PROJECT_RUNTIME_METHODS,
   ...PROJECT_GROUP_METHODS,
+  ...MOBILE_PROJECT_METHODS,
   ...FOLDER_WORKSPACE_METHODS,
   defineMethod({
     name: 'repo.sparsePresets',
@@ -93,7 +95,12 @@ export const REPO_METHODS = [
     params: RepoPath,
     handler: async (params, context) => ({
       repo: projectRepoVisibilityForClient(
-        await context.runtime.addRepo(params.path, params.kind, undefined, params.displayName),
+        await context.runtime.addRepo(
+          params.path,
+          params.kind,
+          context.clientKind === 'mobile' ? 'local' : undefined,
+          params.displayName
+        ),
         context
       )
     })
@@ -113,7 +120,12 @@ export const REPO_METHODS = [
     params: RepoCreate,
     handler: async (params, context) =>
       projectRepoResultVisibilityForClient(
-        await context.runtime.createRepo(params.parentPath, params.name, params.kind),
+        await context.runtime.createRepo(
+          params.parentPath,
+          params.name,
+          params.kind,
+          context.clientKind === 'mobile' ? 'local' : undefined
+        ),
         context
       )
   }),

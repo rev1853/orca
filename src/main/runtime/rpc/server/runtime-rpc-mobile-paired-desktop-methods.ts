@@ -23,6 +23,14 @@ export const PAIRED_DESKTOP_METHODS = [
   'mobileRelay.hosts.worktrees',
   // The sidebar's Project grouping inputs, as the desktop window last published them.
   'mobileRelay.projectSections',
+  // Manage the paired computer's own catalog, never a workspace's execution host.
+  'repo.defaultCreateParent',
+  'repo.create',
+  'repo.add',
+  'mobileProject.update',
+  'mobileProject.createGroup',
+  'mobileProject.move',
+  'mobileProject.remove',
   'speech.dictation.cancel',
   'speech.dictation.chunk',
   'speech.dictation.finish',

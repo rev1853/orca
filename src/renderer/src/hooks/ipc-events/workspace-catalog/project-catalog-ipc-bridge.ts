@@ -15,7 +15,14 @@ export function registerProjectCatalogIpcBridge(
   remountTerminalTabsAwaitingHostHydration: () => void
 ): void {
   unsubs.push(
-    window.api.repos.onChanged(() => {
+    window.api.repos.onChanged(async (removed) => {
+      if (removed) {
+        try {
+          await useAppStore.getState().retireExternallyRemovedProject(removed)
+        } catch (error) {
+          console.error('[repos] failed to retire externally removed project state', error)
+        }
+      }
       // This app's own catalog changed, so only its own bots re-read, whichever runtime is active.
       void refreshBotHost(LOCAL_EXECUTION_HOST_ID)
       const state = useAppStore.getState()

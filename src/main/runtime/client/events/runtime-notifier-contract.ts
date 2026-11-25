@@ -1,4 +1,5 @@
 import type { BotChangeScope } from '../../../../shared/bots/bot-change-scope'
+import type { RemovedLocalRepo } from '../../../../shared/repository/repo-types'
 import type { WorkspaceMetadataSet } from '../../../../shared/worktree/metadata/workspace-metadata-set'
 import type { WorkspaceCleanupRunFinishedEvent } from '../../../../shared/workspace-cleanup/workspace-cleanup-run'
 import type {
@@ -56,7 +57,7 @@ export type RuntimeNotifier = {
   workspaceMetadataSet?(set: WorkspaceMetadataSet): void
   worktreeBaseStatus?(event: WorktreeBaseStatusEvent): void
   worktreeRemoteBranchConflict?(event: WorktreeRemoteBranchConflictEvent): void
-  reposChanged(): void
+  reposChanged(removed?: RemovedLocalRepo): void
   browserProfilesChanged?(): void
   /** A bot, its automations or its Activity's work changed; debounced by the runtime. */
   botsChanged?(scope: BotChangeScope): void

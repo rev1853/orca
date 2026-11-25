@@ -12,25 +12,18 @@ import { themedStyleSheet } from '../theme/themed-styles'
 import { useMobileColorScheme } from '../theme/use-mobile-color-scheme'
 import type { RpcClient } from '../transport/rpc/rpc-client-contract'
 import { getRuntimePathBasename } from '../../../src/shared/file-access/cross-platform-path'
-import { readHostDirectory, type HostDirectory } from './bot-import-host-reads'
+import {
+  homeRelativePath,
+  hostDirectoryChildPath,
+  readHostDirectory,
+  type HostDirectory
+} from '../host-folders/host-directory-read'
 
 /** A folder picked on the bot's computer: its path there, how it reads with `~`, and what's in it. */
 export type ExportFolder = { path: string; shown: string; count: number }
 
 function shownEntries(directory: HostDirectory) {
   return directory.entries.filter((entry) => !entry.name.startsWith('.'))
-}
-
-function childPath(directory: HostDirectory, name: string): string {
-  const separator = directory.pathFlavor === 'win32' ? '\\' : '/'
-  return directory.resolvedPath.endsWith(separator)
-    ? `${directory.resolvedPath}${name}`
-    : `${directory.resolvedPath}${separator}${name}`
-}
-
-/** "/Users/k/Downloads/sage-export" as "~/Downloads/sage-export". */
-export function homeRelativePath(path: string, home: string | null): string {
-  return home && path.startsWith(home) && path !== home ? `~${path.slice(home.length)}` : path
 }
 
 export function MobileBotExportFolderPage(props: {
@@ -58,9 +51,10 @@ export function MobileBotExportFolderPage(props: {
     setFailure(null)
     readHostDirectory(client, '~').then(
       async (home) => {
-        const downloads = await readHostDirectory(client, childPath(home, 'Downloads')).catch(
-          () => null
-        )
+        const downloads = await readHostDirectory(
+          client,
+          hostDirectoryChildPath(home, 'Downloads')
+        ).catch(() => null)
         if (live) {
           setStack(downloads ? [home, downloads] : [home])
         }
@@ -91,7 +85,7 @@ export function MobileBotExportFolderPage(props: {
     const at = ++navigation.current
     setOpening(name)
     try {
-      const next = await readHostDirectory(client, childPath(current, name))
+      const next = await readHostDirectory(client, hostDirectoryChildPath(current, name))
       if (at === navigation.current) {
         setStack([...stack, next])
       }

@@ -214,7 +214,10 @@ export class RuntimeProjectHostSetupController {
     if (repo) {
       assertNoProjectWorktreeCreate(repo)
       if (args.force === false) {
-        this.assertSetupRemovalIsUnused(store, repo)
+        const refusal = describeProjectRemovalRefusal(this.removalImpact(repo, store))
+        if (refusal) {
+          throw new Error(refusal)
+        }
       }
       releaseWorktreeCreatePreparationsForRepo(store, repo)
     }
@@ -248,18 +251,17 @@ export class RuntimeProjectHostSetupController {
       : undefined
   }
 
-  // Only explicit force:false adds refusal; omission preserves older clients' delete behavior.
-  private assertSetupRemovalIsUnused(store: RuntimeStore, repo: Repo): void {
-    const refusal = describeProjectRemovalRefusal({
+  removalImpact(repo: Repo, store = this.deps.getStore()) {
+    if (!store) {
+      throw new Error('runtime_unavailable')
+    }
+    return {
       liveTerminals: this.deps.countLiveTerminalsForRepo(repo),
       workspacesWithMetadata: countRepoWorkspacesWithMetadata(
         repo,
         // Read host-qualified: sibling same-path rows may exist only in canonical maps.
         readAllWorktreeMetaForRepo(store, repo)
       )
-    })
-    if (refusal) {
-      throw new Error(refusal)
     }
   }
 

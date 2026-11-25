@@ -1,14 +1,15 @@
 import { randomUUID } from 'node:crypto'
-import { mkdir, readdir, rm, stat } from 'node:fs/promises'
+import { mkdir, readdir, stat } from 'node:fs/promises'
 import { isAbsolute, join } from 'node:path'
 import { DEFAULT_REPO_BADGE_COLOR } from '../../../shared/repository/appearance/repo-badge-color'
 import {
   LOCAL_EXECUTION_HOST_ID,
+  isRepoOnCatalogHost,
   parseExecutionHostId,
   type ExecutionHostId
 } from '../../../shared/execution-host/execution-host'
 import type { Repo } from '../../../shared/repository/repo-types'
-import { gitExecFileAsync } from '../../git/command-runner/git-exec-file'
+import { initializeNewGitRepo } from './repo-create-git-initialization'
 import { awaitWindowsHostGitEnvironmentReady } from '../../git/command-runner/host-routing/windows-host-git-environment'
 import { getRepoName } from '../../git/repositories/repository-name'
 import { inspectGitRepoForRegistrationAsync } from '../../git/repositories/discovery/repo-detection'
@@ -44,6 +45,22 @@ type RuntimeRepositoryRegistrationDependencies = {
   invalidateResolvedWorktrees: () => void
   invalidateWorktreeScan: (repoId: string) => void
   notifyReposChanged: () => void
+}
+
+function matchesRegistrationHost(repo: Repo, hostId?: ExecutionHostId | null): boolean {
+  return hostId === LOCAL_EXECUTION_HOST_ID
+    ? isRepoOnCatalogHost(repo)
+    : runtimeRepoIsRegistrationCandidate(repo, hostId)
+}
+
+function readLocalRegistration(store: RuntimeStore, repoId: string): Repo {
+  const repo = store.getRepoForHost
+    ? store.getRepoForHost(repoId, LOCAL_EXECUTION_HOST_ID)
+    : store.getRepos().find((row) => row.id === repoId && isRepoOnCatalogHost(row))
+  if (!repo || !isRepoOnCatalogHost(repo)) {
+    throw new Error('Project is no longer registered on this computer')
+  }
+  return repo
 }
 
 export class RuntimeRepositoryRegistrationController {
@@ -93,7 +110,7 @@ export class RuntimeRepositoryRegistrationController {
     // Store Git's resolved toplevel; symlink aliases/subfolders hide the main checkout as external.
     const repoPath = gitInfo?.rootPath ?? path
     const sameHostRepos = (): Repo[] =>
-      store.getRepos().filter((repo) => runtimeRepoIsRegistrationCandidate(repo, executionHostId))
+      store.getRepos().filter((repo) => matchesRegistrationHost(repo, executionHostId))
     // Resolved toplevel lets symlink aliases find existing registrations.
     const findAtPath = (): Repo | undefined =>
       sameHostRepos().find(
@@ -132,7 +149,9 @@ export class RuntimeRepositoryRegistrationController {
     store.addRepo(repo)
     await prepareLocalWorktreeRootForRepo(store, repo)
     this.invalidate(repo.id)
-    return store.getRepo(repo.id) ?? repo
+    return executionHostId === LOCAL_EXECUTION_HOST_ID
+      ? readLocalRegistration(store, repo.id)
+      : (store.getRepo(repo.id) ?? repo)
   }
 
   private reuseExisting(
@@ -140,6 +159,9 @@ export class RuntimeRepositoryRegistrationController {
     existing: Repo,
     executionHostId: ExecutionHostId | null | undefined
   ): Repo {
+    if (executionHostId === LOCAL_EXECUTION_HOST_ID) {
+      return readLocalRegistration(store, existing.id)
+    }
     if (
       existing.executionHostId == null &&
       parseExecutionHostId(executionHostId)?.kind === 'runtime'
@@ -156,7 +178,8 @@ export class RuntimeRepositoryRegistrationController {
   async create(
     parentPath: string,
     name: string,
-    kind: 'git' | 'folder' = 'git'
+    kind: 'git' | 'folder' = 'git',
+    executionHostId?: typeof LOCAL_EXECUTION_HOST_ID
   ): Promise<
     { repo: Repo } | (RepoCreateFailure & { windowsDriveRefusal?: WslHostWindowsDriveRefusal })
   > {
@@ -192,7 +215,7 @@ export class RuntimeRepositoryRegistrationController {
         .getRepos()
         .find(
           (repo) =>
-            runtimeRepoIsRegistrationCandidate(repo) &&
+            matchesRegistrationHost(repo, executionHostId) &&
             targetPathKeys.includes(getClonePathComparisonKey(repo.path))
         )
     const existing = findLocalAtTarget()
@@ -226,16 +249,12 @@ export class RuntimeRepositoryRegistrationController {
     }
 
     if (repoKind === 'git') {
-      const failure = await this.initializeGitRepo(targetPath, createdDir)
+      const failure = await initializeNewGitRepo(targetPath, createdDir)
       if (failure) {
         return failure
       }
     }
     targetPathKeys = await getSavedProjectPathKeys(targetPath)
-    const raceWinner = findLocalAtTarget()
-    if (raceWinner) {
-      return { repo: raceWinner }
-    }
     // Register Git's checkout path so the new project stays its own selected checkout.
     const repoPath =
       repoKind === 'git'
@@ -246,11 +265,16 @@ export class RuntimeRepositoryRegistrationController {
       kind: repoKind,
       executionHostId: LOCAL_EXECUTION_HOST_ID
     })
+    const raceWinner = findLocalAtTarget()
+    if (raceWinner) {
+      return { repo: raceWinner }
+    }
     const repo: Repo = {
       id: randomUUID(),
       path: repoPath,
       displayName: trimmedName,
       badgeColor: DEFAULT_REPO_BADGE_COLOR,
+      ...(executionHostId ? { executionHostId } : {}),
       ...detected,
       addedAt: Date.now(),
       kind: repoKind,
@@ -260,40 +284,11 @@ export class RuntimeRepositoryRegistrationController {
     await prepareLocalWorktreeRootForRepo(store, repo)
     invalidateAuthorizedRootsCache()
     this.invalidate(repo.id)
-    return { repo: store.getRepo(repo.id) ?? repo }
-  }
-
-  private async initializeGitRepo(
-    targetPath: string,
-    createdDir: boolean
-  ): Promise<RepoCreateFailure | null> {
-    let step: 'init' | 'commit' = 'init'
-    try {
-      // Host Git on purpose: the new repo has no project yet, even inside one.
-      await gitExecFileAsync(['init'], { cwd: targetPath, hostGit: true })
-      step = 'commit'
-      await gitExecFileAsync(['commit', '--allow-empty', '-m', 'Initial commit'], {
-        cwd: targetPath,
-        // Host Git on purpose: the new repo has no project yet, even inside one.
-        hostGit: true
-      })
-      return null
-    } catch (error) {
-      if (createdDir) {
-        await rm(targetPath, { recursive: true, force: true }).catch(() => {})
-      } else if (step === 'commit') {
-        await rm(join(targetPath, '.git'), {
-          recursive: true,
-          force: true
-        }).catch(() => {})
-      }
-      const message = error instanceof Error ? error.message : String(error)
-      if (step === 'commit' && /Please tell me who you are|user\.name|user\.email/i.test(message)) {
-        return repoCreateFailure('gitIdentityMissing')
-      }
-      return repoCreateFailure(step === 'init' ? 'gitInitFailed' : 'initialCommitFailed', {
-        detail: message
-      })
+    return {
+      repo:
+        executionHostId === LOCAL_EXECUTION_HOST_ID
+          ? readLocalRegistration(store, repo.id)
+          : (store.getRepo(repo.id) ?? repo)
     }
   }
 

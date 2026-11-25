@@ -63,7 +63,11 @@ export const hostRepoCatalogRepos = salvagingArray(
     badgeColor: salvagedOptional('badgeColor', z.string()),
     repoIcon: salvagedOptional('repoIcon', mobileRepoIconSchema),
     connectionId: salvagedOptional('connectionId', z.string().nullable()),
-    executionHostId: salvagedOptional('executionHostId', z.string().nullable())
+    executionHostId: salvagedOptional('executionHostId', z.string().nullable()),
+    // Read raw: the project manager tells a malformed group field from "ungrouped" and won't guess.
+    projectGroupId: z.unknown().optional(),
+    hiddenAt: salvagedOptional('hiddenAt', z.number().nullable()),
+    kind: salvagedOptional('kind', z.string())
   })
 )
 

@@ -67,27 +67,3 @@ export function useBotImportSources(client: RpcClient | null): BotImportSourcesR
   }, [client])
   return answer && answer.client === client ? answer.read : { status: 'loading' }
 }
-
-const hostDirectoryRead = bindDeferredRpcOperation(
-  defineRpcOperation({
-    name: 'files.browse-server-dir',
-    method: 'files.browseServerDir',
-    acceptance: 'require-result-or-throw-message',
-    barrier: 'after-caller-barrier',
-    read: rpcResultVariant(
-      'host-directory',
-      z.looseObject({
-        resolvedPath: z.string(),
-        entries: z.array(z.looseObject({ name: z.string(), isDirectory: z.boolean() })),
-        pathFlavor: z.enum(['posix', 'win32'])
-      })
-    )
-  })
-)
-
-export type HostDirectory = ReturnType<typeof hostDirectoryRead.interpret>
-
-/** A folder on the bot's computer: `~` is its home there. */
-export async function readHostDirectory(client: RpcClient, path: string): Promise<HostDirectory> {
-  return hostDirectoryRead.interpret(await hostDirectoryRead.request(client, { path }))
-}

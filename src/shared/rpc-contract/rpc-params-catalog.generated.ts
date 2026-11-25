@@ -769,6 +769,12 @@ import {
   PreflightProjectAgentDetection
 } from './preflight/preflight-params'
 import {
+  MobileProjectCreateGroup,
+  MobileProjectMove,
+  MobileProjectRemove,
+  MobileProjectUpdate
+} from './projects/mobile-project-params'
+import {
   ProjectHostSetupClone,
   ProjectHostSetupCreate,
   ProjectHostSetupDelete,
@@ -1875,6 +1881,10 @@ export const RPC_PARAMS_BY_METHOD = {
   'managedServer.update': ManagedServerUpdate,
   'markdown.readTab': ActivateTab,
   'markdown.saveTab': SaveMarkdownTab,
+  'mobileProject.createGroup': MobileProjectCreateGroup,
+  'mobileProject.move': MobileProjectMove,
+  'mobileProject.remove': MobileProjectRemove,
+  'mobileProject.update': MobileProjectUpdate,
   'mobileRelay.hosts.list': null,
   'mobileRelay.hosts.worktrees': MobileRelayHostWorktreesParamsSchema,
   'mobileRelay.projectSections': null,

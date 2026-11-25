@@ -17,6 +17,7 @@ import type {
   ProjectGroupUpdate
 } from '../../../shared/project/groups/project-group-types'
 import type { Repo } from '../../../shared/repository/repo-types'
+import { isRepoOnCatalogHost } from '../../../shared/execution-host/execution-host'
 import type {
   FolderWorkspacePathStatus,
   FolderWorkspacePathStatusRequest
@@ -144,7 +145,7 @@ export class RuntimeProjectGroupController {
   }
 
   async moveProject(
-    repoSelector: string,
+    repoSelector: string | Repo,
     groupId: string | null,
     order?: number,
     connectionId?: string | null
@@ -153,7 +154,23 @@ export class RuntimeProjectGroupController {
     if (!store?.moveProjectToGroup) {
       throw new Error('runtime_unavailable')
     }
-    const repo = await this.deps.resolveRepo(repoSelector, connectionId)
+    const repo =
+      typeof repoSelector === 'string'
+        ? await this.deps.resolveRepo(repoSelector, connectionId)
+        : repoSelector
+    if (typeof repoSelector !== 'string') {
+      if (
+        groupId !== null &&
+        this.listVisibleGroups().filter(
+          (group) => group.id === groupId && isRepoOnCatalogHost(group)
+        ).length !== 1
+      ) {
+        throw new Error('project_group_not_found')
+      }
+      if ((repo.projectGroupId ?? null) === groupId) {
+        return repo
+      }
+    }
     assertWslMoveRepoWritable(store, repo)
     const moved = store.moveProjectToGroup(repo, groupId, order)
     if (!moved) {

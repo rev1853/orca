@@ -9,6 +9,7 @@ import type { LegacyWorkerRecoveryCandidate } from '../orchestration/terminal-au
 import type { LegacyWorkerTerminalRecoveryPlan } from '../orchestration/terminal-authority/release/orchestration-legacy-worker-terminal-recovery'
 
 import type { FolderWorkspace } from '../../../shared/folder-workspaces/folder-workspace-types'
+import type { RemovedLocalRepo } from '../../../shared/repository/repo-types'
 import type { ResolvedWorktree } from '../workspaces/catalog/runtime-worktree-path-identity'
 import {
   confirmRunTerminalShellAlone,
@@ -312,7 +313,7 @@ export abstract class OrcaRuntimeWithPreservedBranchCleanup extends RuntimeAgent
     getStore: () => this.store,
     invalidateResolvedWorktrees: () => this.invalidateResolvedWorktreeCache(),
     invalidateWorktreeScan: (repoId: string) => this.invalidateWorktreeScanCacheForRepo(repoId),
-    notifyReposChanged: () => this.notifyReposChanged()
+    notifyReposChanged: (removed?: RemovedLocalRepo) => this.notifyReposChanged(removed)
   }
 
   protected readonly nestedRepoImport = new RuntimeNestedRepoImport(this.repositoryCatalogDeps)

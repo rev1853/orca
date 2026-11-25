@@ -1,7 +1,8 @@
 import { ipcRenderer } from 'electron'
 import type {
   BaseRefDefaultResult,
-  BaseRefSearchResult
+  BaseRefSearchResult,
+  RemovedLocalRepo
 } from '../../../shared/repository/repo-types'
 import type { ExecutionHostId } from '../../../shared/execution-host/execution-host'
 import type { PreloadApi } from '../../api-types'
@@ -70,8 +71,9 @@ export const reposApi = {
     hostId?: ExecutionHostId
   }): Promise<BaseRefSearchResult[]> => ipcRenderer.invoke('repos:searchBaseRefDetails', args),
 
-  onChanged: (callback: () => void): (() => void) => {
-    const listener = (_event: Electron.IpcRendererEvent) => callback()
+  onChanged: (callback): (() => void) => {
+    const listener = (_event: Electron.IpcRendererEvent, removed?: RemovedLocalRepo) =>
+      callback(removed)
     ipcRenderer.on('repos:changed', listener)
     return () => ipcRenderer.removeListener('repos:changed', listener)
   }

@@ -8,8 +8,12 @@ export const NOTIFICATIONS_REMOTE_PUSH_RUNTIME_CAPABILITY = 'notifications.remot
 export const NOTIFICATIONS_PUSH_COVERAGE_RUNTIME_CAPABILITY =
   'notifications.push-coverage.v1' as const
 
+// Hosts without this capability lack mobileProject.* and the mobile-routed repo.add/create/defaultCreateParent.
+export const MOBILE_PROJECT_MANAGEMENT_RUNTIME_CAPABILITY = 'mobile.project-management.v1' as const
+
 export const MOBILE_RUNTIME_CAPABILITIES = [
   'mobile.tasks.v1',
+  MOBILE_PROJECT_MANAGEMENT_RUNTIME_CAPABILITY,
   NOTIFICATIONS_REMOTE_PUSH_RUNTIME_CAPABILITY,
   NOTIFICATIONS_DESKTOP_PRESENCE_RUNTIME_CAPABILITY,
   NOTIFICATIONS_PUSH_COVERAGE_RUNTIME_CAPABILITY,

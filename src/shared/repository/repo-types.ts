@@ -15,6 +15,9 @@ import type { RepoWorkspaceCleanupPolicy } from '../workspace-cleanup/workspace-
 
 export type RepoKind = 'git' | 'folder'
 
+/** External removal already committed; the desktop retires only this row's UI. */
+export type RemovedLocalRepo = { repoId: string; hostId: 'local' }
+
 /** Explicit choices survive remote-topology changes; absent/auto uses upstream when present, otherwise origin.
  * Explicit upstream falls back to origin with a toast if that remote vanishes. */
 export type IssueSourcePreference = 'upstream' | 'origin' | 'auto'

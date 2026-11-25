@@ -1,7 +1,7 @@
 import { isFolderRepo } from '../../../shared/repository/repo-kind'
 import { isRepoHidden } from '../../../shared/project/catalog/hidden-projects'
 import { commitProvenRepoKindChange } from '../../workspaces/catalog/folder-repo-git-conversion'
-import type { Repo } from '../../../shared/repository/repo-types'
+import type { RemovedLocalRepo, Repo } from '../../../shared/repository/repo-types'
 import { getRepoExecutionHostId } from '../../../shared/execution-host/execution-host'
 import type { SetupAgentStartupPolicy } from '../../../shared/workspace-setup/orca-yaml-hook-types'
 import { buildSetupAgentStartupHookSettings } from '../../../shared/workspace-setup/repo-hook-settings-defaults'
@@ -28,7 +28,7 @@ type RuntimeRepositorySettingsDependencies = {
   ) => Promise<unknown>
   invalidateResolvedWorktrees: () => void
   invalidateWorktreeScan: (repoId: string) => void
-  notifyReposChanged: () => void
+  notifyReposChanged: (removed?: RemovedLocalRepo) => void
   notifyWorktreesChanged: (repoId: string, options: { invalidateGitScans: false }) => void
 }
 
@@ -125,7 +125,7 @@ export class RuntimeRepositorySettingsController {
     return updated
   }
 
-  async update(repoSelector: string, updates: RepositoryUpdates): Promise<Repo> {
+  async update(repoSelector: RuntimeRepoSelector, updates: RepositoryUpdates): Promise<Repo> {
     const store = this.requireStore()
     const repo = await this.deps.resolveRepo(repoSelector)
     assertWslMoveRepoWritable(store, repo)
@@ -183,7 +183,7 @@ export class RuntimeRepositorySettingsController {
   }
 
   /** `repo.rm` names a selector; this desktop's own removal names the exact host row. */
-  async remove(target: string | Repo): Promise<{ removed: true }> {
+  async remove(target: string | Repo, source?: 'mobile'): Promise<{ removed: true }> {
     const store = this.deps.getStore()
     if (!store?.removeProjectForHost) {
       throw new Error('runtime_unavailable')
@@ -212,7 +212,11 @@ export class RuntimeRepositorySettingsController {
     this.deps.invalidateResolvedWorktrees()
     this.deps.invalidateWorktreeScan(repo.id)
     invalidateAuthorizedRootsCache()
-    this.deps.notifyReposChanged()
+    if (source === 'mobile') {
+      this.deps.notifyReposChanged({ repoId: repo.id, hostId: 'local' })
+    } else {
+      this.deps.notifyReposChanged()
+    }
     return { removed: true }
   }
 

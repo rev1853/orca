@@ -49,7 +49,7 @@ export function registerRuntimeWindowLifecycle(
     workspaceMetadataSet: (set) => send('worktrees:metadataSet', set),
     worktreeBaseStatus: (event) => send('worktree:baseStatus', event),
     worktreeRemoteBranchConflict: (event) => send('worktree:remoteBranchConflict', event),
-    reposChanged: () => send('repos:changed'),
+    reposChanged: (removed) => send('repos:changed', removed),
     browserProfilesChanged: () => send('browser:session:profilesChanged'),
     automationsChanged: (payload) => send('automations:changed', payload),
     botsChanged: (scope) => send('bots:changed', scope),

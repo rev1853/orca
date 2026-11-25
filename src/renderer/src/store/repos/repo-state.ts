@@ -28,7 +28,7 @@ import type {
   ProjectHostSetupUpdateResult,
   ProjectUpdateArgs
 } from '../../../../shared/project/project-types'
-import type { Repo } from '../../../../shared/repository/repo-types'
+import type { RemovedLocalRepo, Repo } from '../../../../shared/repository/repo-types'
 import type { RepoHostTarget } from '../../../../shared/repository/repo-host-identity'
 import type {
   FolderWorkspacePathStatus,
@@ -307,6 +307,7 @@ export type RepoSlice = {
       localOnly?: boolean
     }
   ) => Promise<void>
+  retireExternallyRemovedProject: (removed: RemovedLocalRepo) => Promise<void>
   updateProject: (
     projectId: string,
     updates: ProjectUpdate,

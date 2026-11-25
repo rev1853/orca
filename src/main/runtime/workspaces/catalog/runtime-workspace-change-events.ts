@@ -1,4 +1,5 @@
 import type { RuntimeWorktreeLifecycleEvent } from '../lifecycle/worktree-lifecycle-event'
+import type { RemovedLocalRepo } from '../../../../shared/repository/repo-types'
 import type { AutomationsChangedPayload } from '../../../../shared/remote-runtime/session-graph/runtime-client-events'
 import type { WorkspaceCleanupRunFinishedEvent } from '../../../../shared/workspace-cleanup/workspace-cleanup-run'
 import { scheduleCurrentWorktreeBaseDirectoryWatcherSync } from '../../../ipc/worktrees/creation/worktree-base-directory-watcher'
@@ -53,10 +54,10 @@ export abstract class RuntimeWorkspaceChangeEvents extends NativeChatLaunchDraft
     this.worktreeLifecycleEvents.emit(event)
   }
 
-  protected notifyReposChanged(): void {
+  protected notifyReposChanged(removed?: RemovedLocalRepo): void {
     this.pruneUnregisteredWorktreeScans()
     wakeFolderRepoGitUpgradeWatch()
-    this.notifier?.reposChanged()
+    this.notifier?.reposChanged(removed)
     this.emitClientEvent({ type: 'reposChanged' })
     // Same as the desktop IPC path: repo or nesting changes move the roots the watcher follows.
     scheduleCurrentWorktreeBaseDirectoryWatcherSync()
